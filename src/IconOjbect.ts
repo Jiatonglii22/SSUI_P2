@@ -87,6 +87,11 @@ export class IconObject extends DrawnObjectBase {
     public get resizesImage() {return this._resizesImage;}
     public set resizesImage(v : boolean) {
         //=== YOUR CODE HERE ===
+        if (!(v === this._resizesImage)) {
+            this._resizesImage = v;
+            //console.log("resize?", this._resizesImage);
+            this.damageAll();
+        }
     }
 
     //-------------------------------------------------------------------
@@ -96,6 +101,18 @@ export class IconObject extends DrawnObjectBase {
     // If our size is determined by the image, resize us to match (otherwise do nothing).
     protected _resize() {
         //=== YOUR CODE HERE ===
+        if (!(this._resizesImage)) {
+        
+            if (this._image && this._image.canvasImage) {
+                //console.log("image resize before: ", this._w, this._h);
+                //resizes to image dimensions 
+                this._w = this._image.canvasImage.width;
+                this._h = this._image.canvasImage.height;
+                //console.log("image resize after: ", this._w, this._h);
+            } 
+        }
+
+        
     }
 
     //. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
@@ -107,6 +124,7 @@ export class IconObject extends DrawnObjectBase {
         // damage the old position/size
         this.damageAll();
         this.image = img;
+        //console.log("image loaded?" , this.image);
 
         // do special notification to support possible a extra redraw for 
         // asynchronous notifications that happen after all other drawing 
@@ -123,11 +141,13 @@ export class IconObject extends DrawnObjectBase {
         // if we don't have an image bail out
         if (!this.image || !this.image.canvasImage) return;
 
-        if (this.resizesImage) {
+        if (this._resizesImage) {
             //=== YOUR CODE HERE ===
+            ctx.drawImage(this.image.canvasImage, 0, 0, this._w, this._h);          
         } else {
             //=== YOUR CODE HERE ===
-        }
+            ctx.drawImage(this.image.canvasImage, 0, 0, this.image.canvasImage.width, this.image.canvasImage.height);
+                }
     }
 
 }  // end of IconObject class
