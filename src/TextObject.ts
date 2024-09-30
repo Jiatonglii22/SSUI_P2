@@ -36,6 +36,10 @@ export class TextObject extends DrawnObjectBase {
     public get text() {return this._text;}
     public set text(v : string) {
         //=== YOUR CODE HERE ===
+        if (!(v === this._text)) {
+            this._text = v;
+            this.damageAll();
+        }
     }
 
     //. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
@@ -68,6 +72,10 @@ export class TextObject extends DrawnObjectBase {
     public get font() {return this._font;}
     public set font(v : string) {
         //=== YOUR CODE HERE ===
+        if (!(v === this._font)) {
+            this._font = v;
+            this.damageAll();
+        }
     }  
     
     //. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
@@ -80,6 +88,9 @@ export class TextObject extends DrawnObjectBase {
     public set padding(v : SizeLiteral | number) {
         if (typeof v === 'number') v = {w:v, h:v};
         //=== YOUR CODE HERE ===
+        this._padding = v;
+        this.damageAll();
+
     }
     
     //. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
@@ -108,9 +119,18 @@ export class TextObject extends DrawnObjectBase {
     protected _recalcSize(ctx? : DrawContext) : void {
         //=== YOUR CODE HERE ===
 
+        let metrics = this._measureText(this.text, this.font, ctx); 
+        // this.size = {w: metrics.w, h: metrics.h};
+        this.w = metrics.w; 
+        this.h = metrics.h; 
+        // console.log("text width" , this.w); 
+        // console.log("text width" , this.h); 
+
+
         // set the size configuration to be fixed at that size
-        this.wConfig = SizeConfig.fixed(this.w);
-        this.hConfig = SizeConfig.fixed(this.h);
+        this.wConfig = SizeConfig.fixed(this._w);
+        this.hConfig = SizeConfig.fixed(this._h);
+
     }
     
     //. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
@@ -134,6 +154,20 @@ export class TextObject extends DrawnObjectBase {
             }
             
             //=== YOUR CODE HERE ===
+            //set font and fill styles
+            ctx.font = this._font; 
+            ctx.fillStyle = clr;
+            //get text measurements
+            let metrics = this._measureText(this.text, this.font, ctx); 
+            
+            if (this._renderType === "fill") {
+                //fill text if specified
+                ctx.fillText(this._text, this.padding.w, metrics.baseln + this.padding.h, this.maxW);
+            } else {
+                //only add stroke if not filled 
+                ctx.strokeStyle = clr; 
+                ctx.strokeText(this._text, this.padding.w, metrics.baseln + this.padding.h, this.maxW);
+            }
 
         }   finally {
             // restore the drawing context to the state it was given to us in
