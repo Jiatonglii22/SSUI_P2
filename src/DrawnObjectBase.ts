@@ -107,13 +107,16 @@ export class DrawnObjectBase {
     protected _x : number = 0;
     public get x() : number {return this._x;}  
     public set x(v : number) {
-        if (v !== this.x) {
+        if (!(v === this._x)) {
 
              // don't forget to declare damage whenever something changes
              // that could affect the display
 
             //=== YOUR CODE HERE ===
+            this._x = v;
+            this.damageAll();
         }
+
     }    
     //. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 
@@ -122,6 +125,10 @@ export class DrawnObjectBase {
     public get y() : number {return this._y;}
     public set y(v : number) {
         //=== YOUR CODE HERE ===
+        if (!(v === this._y)) {
+            this._y = v;
+            this.damageAll();
+        }
     }
 
     //. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
@@ -140,6 +147,11 @@ export class DrawnObjectBase {
     public get w() : number {return this._w;}
     public set w(v : number) {
             //=== YOUR CODE HERE ===
+            if (!(v === this._w)) {
+                this._w = v;
+                console.log ("stretch w", this._w);
+                this.damageAll();
+            }
     }
 
     //. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
@@ -149,6 +161,10 @@ export class DrawnObjectBase {
     public get wConfig() : SizeConfigLiteral {return this._wConfig;}
     public set wConfig(v : SizeConfigLiteral) {
         //=== YOUR CODE HERE ===
+        if (!(v === this._wConfig)) {
+            this._wConfig = v; 
+            this.damageAll();
+        }
     }
         
     public get naturalW() : number {return this._wConfig.nat;}
@@ -174,6 +190,11 @@ export class DrawnObjectBase {
     public get h() : number {return this._h;}
     public set h(v : number) {
         //=== YOUR CODE HERE ===
+        if (!(v === this._h)) {
+            this._h = v;
+            console.log ("stretch h", this._h);
+            this.damageAll();
+        }
     }
 
     //. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
@@ -183,6 +204,10 @@ export class DrawnObjectBase {
     public get hConfig() : SizeConfigLiteral {return this._hConfig;}
     public set hConfig(v : SizeConfigLiteral) {
         //=== YOUR CODE HERE ===
+        if (!(v === this._hConfig)) {
+            this._hConfig = v;
+            this.damageAll();
+        }
     }
 
     public get naturalH() : number {return this._hConfig.nat;}
@@ -205,6 +230,7 @@ export class DrawnObjectBase {
     public set size(v : SizeLiteral) {
         let {w:newW, h:newH} = v;
         this.w = newW; this.h = newH;
+        this.damageAll();
     }
     
     //. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
@@ -216,6 +242,10 @@ export class DrawnObjectBase {
     public get visible() : boolean {return this._visible;}
     public set visible(v : boolean) {
             //=== YOUR CODE HERE ===
+            if (v !== this._visible) {
+                this._visible = v;
+                this.damageAll();
+            }
     }
 
     //-------------------------------------------------------------------
@@ -441,6 +471,11 @@ export class DrawnObjectBase {
                      clipx : number, clipy : number, clipw : number, cliph : number) 
     {
         //=== YOUR CODE HERE ===
+        ctx.beginPath();
+        ctx.rect(clipx, clipy, clipw, cliph); 
+        ctx.closePath();
+        ctx.clip();
+        this.damageAll();
     }
 
     // Utility routine to create a new rectangular path at our bounding box.
@@ -506,6 +541,11 @@ export class DrawnObjectBase {
         ctx.save();
 
         //=== YOUR CODE HERE ===
+        //get current child
+        var child = this.children[childIndx];
+        // console.log("child is: ", child);
+        ctx.translate(child._x, child._y); //translate to child coordinates 
+        this.applyClip(ctx, 0, 0, child._w, child._h); //clip to child bounds 
     }
 
     
@@ -633,6 +673,12 @@ export class DrawnObjectBase {
     // our parent.
     public damageArea(xv: number, yv : number, wv : number, hv : number) : void {
         //=== YOUR CODE HERE ===
+        if (this.parent) {
+            // console.log("child is damaged!!");
+            //pass damage up the tree
+            this.parent._damageFromChild(this, xv, yv, wv, hv);
+        }
+
     }
 
     //. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
@@ -657,6 +703,15 @@ export class DrawnObjectBase {
                                wv : number, hv: number) : void 
     {
             //=== YOUR CODE HERE ===
+            //compute x, y in parent coords
+            var xInParentCoords = xInChildCoords + child._x; 
+            var yInParentCoords = yInChildCoords + child._y;
+            // this.damageArea(xInParentCoords, yInParentCoords, wv, hv);
+            if (this.parent) { 
+                //keep passing damage up the tree
+                this.parent._damageFromChild(this, xInParentCoords, yInParentCoords, wv, hv);
+            } 
+
     }
 
     //. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
