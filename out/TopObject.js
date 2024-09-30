@@ -70,6 +70,7 @@ export class TopObject extends DrawnObjectBase {
     // For this object we clear the canvas behind the children that we draw
     _drawSelfOnly(ctx) {
         //=== YOUR CODE HERE ===
+        ctx.clearRect(0, 0, this._w, this._h);
     }
     //. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
     // Override the _findTop() method so to returns this object as the top we have been
@@ -85,8 +86,8 @@ export class TopObject extends DrawnObjectBase {
     // areas through the normal means, prior to calling this method.
     layoutAndDrawAll() {
         // only do something if we have been damaged since the last redraw
-        if (this.damaged) {
-            // save the async damage setting so we can restore it
+        if (this._damaged) {
+            // save the async damage setting so we can restore i    t
             const saveAsyncSetting = this.allowAsyncDamageRedraw;
             // do the layout first...
             // we use a try-catch block here so an exception thrown during layout 
@@ -117,8 +118,10 @@ export class TopObject extends DrawnObjectBase {
                 // ourselves...
                 // clip to our bounds
                 //=== YOUR CODE HERE ===
+                this.applyClip(this.canvasContext, this._x, this._y, this._w, this._h);
                 // within our bounds clip to just the damaged region
                 //=== YOUR CODE HERE ===
+                this.applyClip(this.canvasContext, this._damageRectX, this._damageRectY, this._damageRectW, this._damageRectH);
                 // after this we will no longer be damaged, so reset our damage tracking
                 // rectangle to be our whole bounds
                 this._damageRectX = this._damageRectY = 0;
@@ -126,6 +129,7 @@ export class TopObject extends DrawnObjectBase {
                 this._damageRectH = this.h;
                 // do the actual drawing from here down the tree
                 //=== YOUR CODE HERE ===
+                this.draw(this.canvasContext);
             }
             catch (err) {
                 // catch any exception thrown and echo the message, but then 
@@ -155,6 +159,11 @@ export class TopObject extends DrawnObjectBase {
     // damage instead of passing it up the tree (since there is no up  from here).
     damageArea(xv, yv, wv, hv) {
         //=== YOUR CODE HERE ===
+        this._damageRectX = xv;
+        this._damageRectY = yv;
+        this._damageRectW = wv;
+        this._damageRectH = hv;
+        this._damaged = true;
     }
     //. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .  
     // Special routine to declare that damage has occured due to asynchronous

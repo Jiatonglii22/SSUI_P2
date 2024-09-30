@@ -78,6 +78,31 @@ export class Column extends Group {
     // Our height is set to the height determined by stacking our children vertically.
     _doLocalSizing() {
         //=== YOUR CODE HERE ===
+        //initialize new configuration
+        var hMins = 0;
+        var hNaturals = 0;
+        var hMaxes = 0;
+        var wMins = 0;
+        var wNaturals = 0;
+        var wMaxes = 0;
+        for (let child of this.children) {
+            //sum up child heights
+            hMins += child.minH;
+            hNaturals += child.naturalH;
+            hMaxes += child.maxH;
+            //find nax of child widths
+            wMins = Math.max(wMins, child.minW);
+            wNaturals = Math.max(wNaturals, child.naturalW);
+            wMaxes = Math.max(wMaxes, child.maxW);
+        }
+        //set new configuration
+        this.minH = hMins;
+        this.naturalH = hNaturals;
+        this.maxH = hMaxes;
+        this.minW = wMins;
+        this.naturalW = wNaturals;
+        this.maxW = hMaxes;
+        // this.damageAll();
     }
     //. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
     // This method adjusts the height of the children to do vertical springs and struts 
@@ -135,6 +160,19 @@ export class Column extends Group {
         let availCompr = 0;
         let numSprings = 0;
         //=== YOUR CODE HERE ===
+        //iterate through children
+        for (let child of this.children) {
+            if (child instanceof Spring) {
+                //count springs
+                numSprings += 1;
+            }
+            else {
+                //sum up natural height
+                natSum += child.naturalH;
+                //compute available compress
+                availCompr += (child.naturalH - child.minH);
+            }
+        }
         return [natSum, availCompr, numSprings];
     }
     //. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
@@ -144,6 +182,17 @@ export class Column extends Group {
     // the space at the bottom of the column as a fallback strategy).
     _expandChildSprings(excess, numSprings) {
         //=== YOUR CODE HERE ===
+        if (!(numSprings === 0)) {
+            var expansion = 0;
+            //calculate expansion based on excess and number of springs
+            expansion = excess / numSprings; //divide excess evenly amongst the springs
+            for (let child of this.children) {
+                if (child instanceof Spring) {
+                    //reset spring height
+                    child.h = expansion;
+                }
+            }
+        }
     }
     //. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
     // Contract our child objects to make up the given amount of shortfall.  Springs
@@ -160,6 +209,14 @@ export class Column extends Group {
         // from the natural height of that child, to get the assigned height.
         for (let child of this.children) {
             //=== YOUR CODE HERE ===
+            if (!(child instanceof Spring)) {
+                //calculate fraction of the total 
+                var childFraction = (child.naturalH - child.minH) / availCompr;
+                //compute compressed amount
+                var compressed = shortfall * childFraction;
+                //update child height
+                child.h = child.naturalH - compressed;
+            }
         }
     }
     //. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
@@ -198,6 +255,21 @@ export class Column extends Group {
         }
         // apply our justification setting for the horizontal
         //=== YOUR CODE HERE ===
+        for (let child of this.children) {
+            if (this.wJustification === 'center') {
+                //calculate middle point
+                child.x = (this.w - child.w) / 2;
+            }
+            else if (this.wJustification === 'right') {
+                //calculate width from right side
+                child.x = this.w - child.w;
+            }
+            else {
+                //leftmost is 0
+                child.x = 0;
+            }
+        }
+        ;
     }
 }
 //===================================================================
